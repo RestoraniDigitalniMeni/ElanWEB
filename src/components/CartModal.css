@@ -1,0 +1,142 @@
+.cartOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.cartModal {
+  width: 100%;
+  max-width: 420px;
+  background: #111;
+  border-radius: 18px;
+  border: 1px solid #222;
+  display: flex;
+  flex-direction: column;
+  max-height: 80vh;
+  overflow: hidden;
+}
+
+/* HEADER */
+.cartHeader {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px;
+  border-bottom: 1px solid #222;
+  color: white;
+}
+
+.cartHeader button {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 18px;
+}
+
+/* ITEMS */
+.cartItems {
+  padding: 12px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.cartItem {
+  display: flex;
+  justify-content: space-between;
+  background: #1a1a1a;
+  padding: 10px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  border: 1px solid #222;
+}
+
+.itemInfo .name {
+  color: white;
+  font-weight: 600;
+}
+
+.itemInfo .price {
+  color: #ffb347;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.qtyControls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.qtyControls button {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: none;
+  background: #ffb347;
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.qtyControls span {
+  color: white;
+}
+
+/* EMPTY */
+.empty {
+  color: #777;
+  text-align: center;
+  margin-top: 20px;
+}
+
+/* FOOTER */
+.cartFooter {
+  border-top: 1px solid #222;
+  padding: 14px;
+}
+
+.total {
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.total span {
+  color: #ffb347;
+  font-weight: bold;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.cancel {
+  flex: 1;
+  padding: 10px;
+  background: #333;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+}
+
+.confirm {
+  flex: 1;
+  padding: 10px;
+  background: #ffb347;
+  border: none;
+  border-radius: 10px;
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.confirm:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
