@@ -3,11 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { update } from "firebase/database";
 import { child } from "firebase/database";
 import { usersRestoran } from "../firebase/refs";
+import { onValue } from "firebase/database";
+import { rootRestoran } from "../firebase/refs";
 export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-
+const [licenseExpired, setLicenseExpired] = useState(false);
   // LOAD USER ON START
 useEffect(() => {
   try {
@@ -24,6 +26,77 @@ useEffect(() => {
 
   setLoading(false);
 }, []);
+
+
+
+
+useEffect(() => {
+
+  const expireRef = child(
+    rootRestoran(),
+    "Expire"
+  );
+
+
+  const unsubscribe = onValue(
+    expireRef,
+    (snap) => {
+
+      if (!snap.exists()) {
+        return;
+      }
+
+
+      let expire = snap.val();
+
+
+      // ako nije string pretvori
+      expire = String(expire);
+
+
+      const parts = expire.split(".");
+
+
+      if(parts.length !== 3){
+        return;
+      }
+
+
+      const expireDate = new Date(
+        parts[2],
+        parts[1] - 1,
+        parts[0]
+      );
+
+
+      const today = new Date();
+
+      today.setHours(0,0,0,0);
+      expireDate.setHours(0,0,0,0);
+
+
+
+      if(expireDate < today){
+
+        setLicenseExpired(true);
+
+      }
+
+
+    }
+  );
+
+
+  return () => unsubscribe();
+
+
+}, []);
+
+
+
+
+
+
 
   // FCM (ostavi prazno ako još nisi sredio messaging)
   useEffect(() => {
@@ -69,6 +142,94 @@ useEffect(() => {
   );
 
   return (
+  
+  
+  <>
+{
+licenseExpired &&
+
+<div
+style={{
+position:"fixed",
+inset:0,
+zIndex:9999,
+background:"rgba(0,0,0,0.65)",
+display:"flex",
+alignItems:"center",
+justifyContent:"center",
+padding:20
+}}
+>
+
+<div
+style={{
+width:"100%",
+maxWidth:380,
+background:"linear-gradient(135deg,#22c55e,#2563eb)",
+borderRadius:24,
+padding:3,
+boxShadow:"0 20px 50px rgba(0,0,0,0.35)"
+}}
+>
+
+<div
+style={{
+background:"white",
+borderRadius:22,
+padding:30,
+textAlign:"center"
+}}
+>
+
+<div
+style={{
+fontSize:55,
+marginBottom:15
+}}
+>
+⚠️
+</div>
+
+<div
+style={{
+fontSize:24,
+fontWeight:900,
+color:"#111",
+marginBottom:15
+}}
+>
+Licenca je istekla
+</div>
+
+<div
+style={{
+fontSize:16,
+color:"#555",
+lineHeight:1.5
+}}
+>
+Kontaktirajte administratora
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+}
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
     <div style={{
       position: "fixed",
       inset: 0,
@@ -134,5 +295,6 @@ useEffect(() => {
 
       </div>
     </div>
+	</>
   );
 }

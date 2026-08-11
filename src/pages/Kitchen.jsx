@@ -42,7 +42,9 @@ export default function Kitchen() {
   }, []);
 
 	
-	
+	const scrollRef = useRef(null);
+const [showTop, setShowTop] = useState(false);
+const [showBottom, setShowBottom] = useState(true);
 	
 	
   const [orders, setOrders] = useState([]);
@@ -53,6 +55,9 @@ export default function Kitchen() {
   const isProcessingRef = useRef(false);
   const wakeLockRef = useRef(null);
   const lastOrdersRef = useRef("");
+
+
+
 
 const [loadingOrderId, setLoadingOrderId] = useState(null);
 const [deletingOrderId, setDeletingOrderId] = useState(null);
@@ -67,7 +72,7 @@ const [deletingOrderId, setDeletingOrderId] = useState(null);
     userRole === "Administrator" || userRole === "Kuhinja";
 
   const canDelete = userRole === "Administrator";
-
+const [completedAnimation, setCompletedAnimation] = useState(false);
   const showToast = (msg) => {
     setToast(msg);
     setTimeout(() => setToast(null), 4000);
@@ -86,7 +91,42 @@ const [deletingOrderId, setDeletingOrderId] = useState(null);
 
 
 
+const handleScroll = () => {
 
+  const el = scrollRef.current;
+
+  if (!el) return;
+
+  const atTop = el.scrollTop <= 10;
+
+  const atBottom =
+    el.scrollHeight - el.scrollTop <= el.clientHeight + 10;
+
+
+  setShowTop(!atTop);
+  setShowBottom(!atBottom);
+
+};
+
+
+const scrollToTop = () => {
+
+  scrollRef.current?.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+
+};
+
+
+const scrollToBottom = () => {
+
+  scrollRef.current?.scrollTo({
+    top:scrollRef.current.scrollHeight,
+    behavior:"smooth"
+  });
+
+};
 
 
 const vibrate = () => {
@@ -226,14 +266,17 @@ const vibrate = () => {
 
 
 
-    const getWaitMinutes = (order, nowTs) => {
+const getWaitMinutes = (order, nowTs) => {
   const start = parseCustomTime(order.time);
 
   if (!start) return 0;
 
-  return Math.floor((nowTs - start.getTime()) / 60000);
-};
+  const diff = nowTs - start.getTime();
 
+  if (diff <= 0) return 0;
+
+  return Math.floor(diff / 60000);
+};
 
 
 
@@ -499,7 +542,13 @@ updates[
       setSelectedOrder(null);
       setShowDeleteConfirm(false);
 
-      showToast("Narudžba završena");
+      setCompletedAnimation(true);
+
+setTimeout(() => {
+  setCompletedAnimation(false);
+}, 2000);
+
+showToast("Narudžba završena");
     } catch (e) {
       console.log(e);
 
@@ -555,29 +604,33 @@ updates[
     selectedOrder?.orderId === id;
 
   return (
-    <div
-      style={{
-        height: "100vh",
-        background: "#f2f2f2",
-        padding: 12,
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-   <div
+<div
   style={{
+    height: "100vh",
+    background: "linear-gradient(90deg, #22c55e, #3b82f6)",
+    padding: 20,
+    display: "flex",
+    flexDirection: "column",
+    overflow: "hidden",
+  }}
+>
+   <div
+style={{
     position: "sticky",
     top: 0,
     zIndex: 1000,
-    background: "linear-gradient(135deg,#1e1e2f,#2c2c44)",
-    color: "white",
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 12,
+    background: "rgba(30,41,59,.92)",
+    backdropFilter: "blur(18px)",
+    color: "#fff",
+    padding: "18px 22px",
+    borderRadius: 22,
+    marginBottom: 20,
     display: "flex",
     justifyContent: "space-between",
-	
-  }}
+    alignItems: "center",
+    border: "1px solid rgba(255,255,255,.08)",
+    boxShadow: "0 12px 30px rgba(0,0,0,.12)"
+}}
 >
         <div
           style={{
@@ -592,64 +645,107 @@ updates[
 
         <div
           style={{
-            background: "orange",
-            padding: "4px 10px",
+            background:"linear-gradient(135deg,#ffb100,#ff8a00)",
+             
             borderRadius: 20,
             fontWeight: "bold",
             color: "black",
+			padding:"6px 14px",
+fontSize:15,
+boxShadow:"0 8px 20px rgba(255,153,0,.35)"
           }}
         >
           {orders.length}
         </div>
       </div>
 
-      <div
-        style={{
-          flex: 1,
-          overflowY: "auto",
-          display: "flex",
-          flexDirection: "column",
-          gap: 12,
-        }}
-      >
+    <div
+ref={scrollRef}
+onScroll={handleScroll}
+style={{
+  flex: 1,
+  overflowY: "auto",
+  scrollbarWidth:"none",
+  msOverflowStyle:"none",
+  display: "flex",
+  flexDirection: "column",
+  gap: 12,
+}}
+>
         {orders.map((order) => (
           <div
             key={order.orderId}
             onClick={() => setSelectedOrder(order)}
-            style={{
-              background: isSelected(order.orderId)
-                ? "#fff7e6"
-                : "white",
-              borderRadius: 16,
-              padding: 14,
-              borderLeft: "4px solid #2c2c44",
-              cursor: "pointer",
-            }}
+          style={{
+    background: "#fff",
+    borderRadius: 22,
+    padding: 18,
+    cursor: "pointer",
+    transition: ".25s",
+    border: isSelected(order.orderId)
+        ? "2px solid #2563eb"
+        : "1px solid #e6eaf0",
+    boxShadow: isSelected(order.orderId)
+        ? "0 15px 35px rgba(37,99,235,.18)"
+        : "0 6px 18px rgba(0,0,0,.05)",
+}}
           >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-              }}
-            >
-              <b>{order.orderPersonName}</b>
+            
+<div
+  style={{
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  }}
+>
+  <div
+    style={{
+      fontSize: 18,
+      fontWeight: 700,
+      color: "#111827",
+    }}
+  >
+    {order.orderPersonName}
+  </div>
+</div>
 
-              <span style={{ opacity: 0.7 }}>
-                {getClockTime(order.time)}
-              </span>
-            </div>
+<div
+  style={{
+    display: "flex",
+    gap: 8,
+    marginTop: 10,
+    
+	flexWrap: "wrap",
+	marginBottom: 12,
+	
+  }}
+>
+  <span
+    style={{
+      background: "#eff6ff",
+      color: "#2563eb",
+      padding: "5px 12px",
+      borderRadius: 20,
+      fontSize: 12,
+      fontWeight: 700,
+    }}
+  >
+    🕒 {getClockTime(order.time)}
+  </span>
 
-
+   
+</div>
 
 {order.addittionalInfo && (
   <div
     style={{
       marginTop: 6,
       fontSize: 12,
-      background: "#fff3cd",
-      padding: 8,
-      borderRadius: 8,
-      whiteSpace: "pre-wrap",
+     background:"#fff8e6",
+border:"1px solid #ffd166",
+padding:14,
+borderRadius:16,
+boxShadow:"0 4px 12px rgba(255,193,7,.15)"
     }}
   >
     <b>Dodatne informacije:</b>
@@ -660,15 +756,18 @@ updates[
 
 
 
-            <div
-              style={{
-                marginTop: 8,
-                whiteSpace: "pre-wrap",
-                background: "#f8f8f8",
-                padding: 10,
-                borderRadius: 10,
-              }}
-            >
+           <div
+  style={{
+    marginTop: 12,   // <-- DODAJ
+    whiteSpace: "pre-wrap",
+    background:"#f8fafc",
+    border:"1px solid #e2e8f0",
+    padding:14,
+    borderRadius:16,
+    fontSize:15,
+    lineHeight:1.7,
+  }}
+>
               {formatName(order.name)}
             </div>
 			
@@ -678,14 +777,30 @@ updates[
 			
 
             <div
-              style={{
-                marginTop: 8,
-                fontSize: 12,
-                opacity: 0.7,
-              }}
-            >
-              {getWaitMinutes(order, now)} min
-            </div>
+style={{
+marginTop:14,
+display:"inline-flex",
+padding:"6px 14px",
+borderRadius:30,
+fontWeight:700,
+fontSize:13,
+background:
+getWaitMinutes(order,now)>20
+?"#fee2e2"
+:getWaitMinutes(order,now)>10
+?"#fff7cc"
+:"#dcfce7",
+
+color:
+getWaitMinutes(order,now)>20
+?"#dc2626"
+:getWaitMinutes(order,now)>10
+?"#b45309"
+:"#15803d"
+}}
+>
+⏱ {getWaitMinutes(order,now)} min čekanja
+</div>
           </div>
         ))}
       </div>
@@ -709,11 +824,12 @@ if (loadingOrderId !== null || deletingOrderId !== null) return;
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-              background: "white",
-              width: "100%",
-              padding: 16,
-              borderTopLeftRadius: 20,
-              borderTopRightRadius: 20,
+            background:"#fff",
+width:"100%",
+padding:24,
+borderTopLeftRadius:30,
+borderTopRightRadius:30,
+boxShadow:"0 -20px 50px rgba(0,0,0,.18)"
             }}
           >
     <button
@@ -937,6 +1053,185 @@ if (loadingOrderId !== null || deletingOrderId !== null) return;
           </div>
         </div>
       )}
+
+
+{completedAnimation && (
+ <div
+className="animate-fadeIn"
+style={{
+  position: "fixed",
+  inset:0,
+  zIndex:9999,
+  background:"rgba(0,0,0,.88)",
+  backdropFilter:"blur(12px)",
+  display:"flex",
+  alignItems:"center",
+  justifyContent:"center",
+}}
+>
+    <div
+      style={{
+        textAlign: "center",
+         
+      }}
+    >
+      <div
+	  className="animate-checkCircle"
+        style={{
+          width: 120,
+          height: 120,
+          borderRadius: "50%",
+          background:
+            "linear-gradient(135deg,#ffb100,#ff7a00)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          boxShadow:
+            "0 0 60px rgba(255,145,0,.55)",
+          margin: "0 auto",
+		  
+        }}
+      >
+        <svg
+          width="70"
+          height="70"
+          viewBox="0 0 52 52"
+          fill="none"
+        >
+          <path
+            d="M14 27 L22 35 L39 16"
+            stroke="black"
+            strokeWidth="6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+			className="animate-drawCheck"
+  
+  
+  
+  
+          />
+        </svg>
+      </div>
+
+      <h1
+	   
+        style={{
+          marginTop: 30,
+          color: "white",
+          fontSize: 42,
+          fontWeight: 900,
+		   
+        }}
+      >
+        ZAVRŠENO
+      </h1>
+
+      <p
+        style={{
+          color: "#bdbdbd",
+          marginTop: 10,
+          fontSize: 18,
+        }}
+      >
+        Narudžba je izdata
+      </p>
+    </div>
+  </div>
+)}
+
+
+<div
+style={{
+  position:"fixed",
+  inset:0,
+  pointerEvents:"none",
+  zIndex:2000
+}}
+>
+
+{showTop && (
+
+<button
+onClick={scrollToTop}
+style={{
+  position:"absolute",
+  top:110,
+  right:20,
+
+  width:45,
+  height:45,
+
+  borderRadius:"50%",
+  border:"none",
+
+  background:"linear-gradient(135deg,#3b82f6,#2563eb)",
+  color:"white",
+
+  fontSize:24,
+  fontWeight:"900",
+
+  boxShadow:"0 8px 25px rgba(0,0,0,.35)",
+
+  cursor:"pointer",
+
+  pointerEvents:"auto",
+
+  display:"flex",
+  alignItems:"center",
+  justifyContent:"center"
+}}
+>
+↑
+</button>
+
+
+)}
+
+
+
+{showBottom && (
+ 
+ 
+<button
+onClick={scrollToBottom}
+style={{
+  position:"absolute",
+  bottom:20,
+  right:20,
+
+  width:45,
+  height:45,
+
+  borderRadius:"50%",
+  border:"none",
+
+  background:"linear-gradient(135deg,#3b82f6,#2563eb)",
+  color:"white",
+
+  fontSize:24,
+  fontWeight:"900",
+
+  boxShadow:"0 8px 25px rgba(0,0,0,.35)",
+
+  cursor:"pointer",
+
+  pointerEvents:"auto",
+
+  display:"flex",
+  alignItems:"center",
+  justifyContent:"center"
+}}
+>
+↓
+</button>
+
+ 
+
+)}
+
+
+</div>
+
 
       {toast && (
         <div

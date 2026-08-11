@@ -39,6 +39,38 @@ export default function MjesecniIzvjestaj() {
     return () => unsubscribe();
   }, []);
 
+
+
+const formatMonth = (date) => {
+  const [year, month] = date.split("-");
+
+  const monthsNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+  ];
+
+  return `${monthsNames[Number(month) - 1]} ${year}`;
+};
+
+
+
+
+
+
+
+
+
+
   return (
     <div
       style={{
@@ -76,7 +108,7 @@ export default function MjesecniIzvjestaj() {
               boxShadow: "0 1px 6px rgba(0,0,0,0.06)"
             }}
           >
-            <div style={{ fontWeight: 600 }}>{item.name}</div>
+          <div style={{ fontWeight: 600 }}>{formatMonth(item.name)}</div>
 
             <div style={{ fontSize: 18, fontWeight: "bold" }}>
               {item.value} €

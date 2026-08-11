@@ -174,9 +174,10 @@ useEffect(() => {
     showToast("Svi računi su obrisani!");
   };
 
-  if (loading) {
-    return (
-      <div style={{
+if (loading) {
+  return (
+    <div
+      style={{
         height: "100vh",
         display: "flex",
         justifyContent: "center",
@@ -184,37 +185,53 @@ useEffect(() => {
         background: "#f2f2f2",
         flexDirection: "column",
         gap: 10
-      }}>
-        <div style={{
+      }}
+    >
+
+      <div
+        style={{
           width: 50,
           height: 50,
           border: "5px solid #ccc",
           borderTop: "5px solid #2c2c44",
           borderRadius: "50%",
           animation: "spin 1s linear infinite"
-        }} />
+        }}
+      />
 
-        <div style={{ fontSize: 13, opacity: 0.6 }}>
-          Učitavanje podataka...
-        </div>
-
-        <style>
-          {`
-            @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-          `}
-        </style>
+      <div
+        style={{
+          fontSize: 13,
+          color: "#666"
+        }}
+      >
+        Učitavanje podataka...
       </div>
-    );
-  }
+
+
+      <style>
+        {`
+          @keyframes spin {
+            0% { 
+              transform: rotate(0deg); 
+            }
+
+            100% { 
+              transform: rotate(360deg); 
+            }
+          }
+        `}
+      </style>
+
+    </div>
+  );
+}
 
   return (
-    <div style={{
-      height: "100vh",
-      background: "#f2f2f2",
-      padding: 12,
+  <div style={{
+  height: "100vh",
+  background: "linear-gradient(90deg, #22c55e, #2563eb)",
+  padding: 12,
       fontFamily: "sans-serif",
       overflow: "hidden",
       display: "flex",
