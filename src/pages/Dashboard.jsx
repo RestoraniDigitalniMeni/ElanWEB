@@ -259,38 +259,60 @@ Kontaktirajte administratora
 
         <Card icon="📄✏️" title="Naruči hranu" onClick={() => navigate("/order")} />
         <Card icon="👨‍🍳" title="Kuhinja" onClick={() => navigate("/kitchen")} />
-        <Card icon="📊" title="Statistika" onClick={() => navigate("/stats")} />
-        <Card icon="📄" title="Računi" onClick={() => navigate("/Racuni")} />
-        <Card icon="ℹ️" title="Informacije" onClick={() => navigate("/info")} />
+      <Card
+  icon="📊"
+  title="Statistika"
+  onClick={() => {
+    if (user?.titula === "Administrator") {
+      navigate("/stats");
+    } else {
+      alert("Nemate pravo pristupa!");
+    }
+  }}
+/> <Card icon="📄" title="Računi" onClick={() => navigate("/Racuni")} />
+        <Card icon="ℹ️" title="Informacije" onClick={() => navigate("/about")} />
 
-       <Card
-  icon="🚪"
-  title="Logout"
-  onClick={async () => {
-    const data = localStorage.getItem("user");
+      <Card 
+  icon="🚪" 
+  title="Logout" 
+  onClick={async () => { 
 
-    if (data) {
-      try {
-        const user = JSON.parse(data);
+    // POTVRDA ODJAVE
+    const potvrda = window.confirm(
+      "Da li ste sigurni da želite da se odjavite?"
+    );
 
-        // 🔥 BRISANJE TOKENA IZ BAZE
-        await update(child(usersRestoran(), user.uid), {
-          fcmToken: "",
-          
-        });
-      } catch (e) {
-        console.log("Logout FCM delete error:", e);
-      }
+    // Ako korisnik klikne Otkaži
+    if (!potvrda) {
+      return;
     }
 
-    // 🔥 LOCAL CLEANUP
-    localStorage.removeItem("user");
-    localStorage.removeItem("fcmToken");
+    const data = localStorage.getItem("user"); 
+ 
+    if (data) { 
+      try { 
+        const user = JSON.parse(data); 
+ 
+        // 🔥 BRISANJE TOKENA IZ BAZE 
+        await update(child(usersRestoran(), user.uid), { 
+          fcmToken: "", 
+        }); 
 
-    window.dispatchEvent(new Event("user-logout"));
-
-    navigate("/", { replace: true });
-  }}
+      } catch (e) { 
+        console.log("Logout FCM delete error:", e); 
+      } 
+    } 
+ 
+    // 🔥 LOCAL CLEANUP 
+    localStorage.removeItem("user"); 
+    localStorage.removeItem("fcmToken"); 
+ 
+    // 🔥 OBAVIJESTI APP DA JE USER ODJAVLJEN 
+    window.dispatchEvent(new Event("user-logout")); 
+ 
+    // 🔥 POVRATAK NA LOGIN 
+    navigate("/", { replace: true }); 
+  }} 
 />
 
       </div>

@@ -27,7 +27,7 @@ export default function Login() {
   const [titula, setTitula] = useState("Titula");
 
   const [mode, setMode] = useState("login");
-
+const [acceptedTerms, setAcceptedTerms] = useState(false);
   const navigate = useNavigate();
 
   // =====================================================
@@ -149,6 +149,9 @@ const saveFCMToken = async (uid) => {
   // =====================================================
   const register = async () => {
     try {
+		
+	 
+		
       if (!ime || !email || !password || !broj) {
         alert("Popuni sva polja");
         return;
@@ -158,6 +161,11 @@ const saveFCMToken = async (uid) => {
         alert("Izaberi titulu");
         return;
       }
+	  
+	  	if (!acceptedTerms) {
+      alert("Morate prihvatiti Uslove korištenja i Politiku privatnosti.");
+      return;
+    }
 
       const userCred = await createUserWithEmailAndPassword(
         auth,
@@ -174,6 +182,7 @@ const saveFCMToken = async (uid) => {
         password,
         titula,
         fcmToken: "",
+		 uid,
       };
 
       await set(child(usersRestoran(), uid), newUser);
@@ -272,15 +281,61 @@ const saveFCMToken = async (uid) => {
               onChange={(e) => setPassword(e.target.value)}
             />
 
-            <select
-              className="w-full p-4 rounded-2xl bg-neutral-800 text-white outline-none focus:ring-2 focus:ring-green-500"
-              value={titula}
-              onChange={(e) => setTitula(e.target.value)}
-            >
-              <option value="Titula">Izaberi titulu</option>
-              <option value="Konobar">Konobar</option>
-              <option value="Kuhinja">Kuhinja</option>
-            </select>
+     <select
+  className="w-full p-4 rounded-2xl bg-neutral-800 text-white outline-none focus:ring-2 focus:ring-green-500"
+  value={titula}
+  onChange={(e) => setTitula(e.target.value)}
+>
+  <option value="Titula">Izaberi titulu</option>
+  <option value="Konobar">Konobar</option>
+  <option value="Kuhinja">Kuhinja</option>
+</select>
+
+
+{/* USLOVI I POLITIKA */}
+
+<div className="flex items-start gap-3 text-sm text-neutral-300">
+
+  <input
+    type="checkbox"
+    checked={acceptedTerms}
+    onChange={(e) => setAcceptedTerms(e.target.checked)}
+    className="mt-1 w-4 h-4 accent-green-500 cursor-pointer"
+  />
+
+  <div className="leading-6">
+
+    Prihvatam{" "}
+
+<button
+  type="button"
+  onClick={() =>
+    navigate("/uslovi", {
+      state: { from: "/register" }
+    })
+  }
+  className="text-green-400 hover:text-green-300 underline"
+>
+  Uslove korištenja
+</button>
+
+    {" "}i{" "}
+
+<button
+  type="button"
+  onClick={() =>
+    navigate("/politika", {
+      state: { from: "/register" }
+    })
+  }
+  className="text-green-400 hover:text-green-300 underline"
+>
+  Politiku privatnosti
+</button>
+
+  </div>
+
+</div>
 
             <button
               onClick={register}

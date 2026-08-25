@@ -9,7 +9,9 @@ import Kitchen from "./pages/Kitchen";
 import MjesecniIzvjestaj from "./pages/mjesecniIzvjestaj";
 import Konobari from "./pages/konobari";
 import Naruci from "./pages/Naruci";
-
+import Info from "./pages/about";
+import Uslovi from "./pages/Uslovi";
+import Politika from "./pages/Politika";
 const getUser = () => {
   try {
     const data = localStorage.getItem("user");
@@ -136,14 +138,24 @@ useEffect(() => {
   }
 />
 
-        <Route
-          path="/info"
-          element={
-            <ProtectedRoute user={user}>
-              <h1>Informacije</h1>
-            </ProtectedRoute>
-          }
-        />
+<Route 
+  path="/about" 
+  element={ 
+    <ProtectedRoute user={user}> 
+      <Info /> 
+    </ProtectedRoute> 
+  } 
+/>
+
+<Route 
+  path="/uslovi" 
+  element={<Uslovi />} 
+/>
+
+<Route 
+  path="/politika" 
+  element={<Politika />} 
+/>
 
         {/* fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
