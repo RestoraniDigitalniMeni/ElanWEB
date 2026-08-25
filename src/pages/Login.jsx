@@ -47,27 +47,61 @@ const [acceptedTerms, setAcceptedTerms] = useState(false);
   // =====================================================
   // FCM TOKEN
   // =====================================================
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+ 
 
 const saveFCMToken = async (uid) => {
   try {
-  
+    console.log("========== FCM START ==========");
+    console.log("UID:", uid);
 
-    const permission = await Notification.requestPermission();
-     
+    // 1. Provjera browsera
+    if (!("Notification" in window)) {
+      console.error("❌ Browser ne podržava Notification API");
+      return;
+    }
 
-    if (permission !== "granted") return;
+    if (!("serviceWorker" in navigator)) {
+      console.error("❌ Browser ne podržava Service Worker");
+      return;
+    }
 
-     
+    // 2. Permission
+    let permission = Notification.permission;
+
+    console.log("Trenutni permission:", permission);
+
+    if (permission !== "granted") {
+      permission = await Notification.requestPermission();
+      console.log("Novi permission:", permission);
+    }
+
+    if (permission !== "granted") {
+      console.error("❌ Notification permission nije granted");
+      return;
+    }
+
+    // 3. Service Worker
+    console.log("Čekam Service Worker...");
+
     const registration = await navigator.serviceWorker.ready;
-     
+
+    console.log("✅ Service Worker spreman:");
+    console.log(registration);
+
+    // 4. Firebase Messaging
+    console.log("Uzimam Firebase Messaging...");
 
     const messaging = await getMessagingSafe();
 
     if (!messaging) {
-       
+      console.error("❌ getMessagingSafe() je vratio null/undefined");
       return;
     }
+
+    console.log("✅ Messaging postoji");
+
+    // 5. FCM Token
+    console.log("Tražim FCM token...");
 
     const token = await getToken(messaging, {
       vapidKey:
@@ -75,18 +109,25 @@ const saveFCMToken = async (uid) => {
       serviceWorkerRegistration: registration,
     });
 
- 
+    console.log("FCM TOKEN:", token);
 
-    if (!token) return;
+    if (!token) {
+      console.error("❌ Firebase nije vratio token");
+      return;
+    }
+
+    // 6. Firebase Database
+    console.log("Upisujem token u:", uid);
 
     await update(child(usersRestoran(), uid), {
       fcmToken: token,
-       
     });
 
-     
-  } catch (e) {
-    console.log("❌ FCM ERROR FULL:", e);
+    console.log("✅ FCM TOKEN USPJEŠNO SAČUVAN!");
+    console.log("========== FCM END ==========");
+
+  } catch (error) {
+    console.error("❌❌❌ FCM ERROR:", error);
   }
 };
 
@@ -95,7 +136,7 @@ const saveFCMToken = async (uid) => {
   // =====================================================
  
  
- const login = async () => {
+const login = async () => {
   try {
     await setPersistence(auth, browserLocalPersistence);
 
@@ -119,82 +160,79 @@ const saveFCMToken = async (uid) => {
       uid,
     };
 
-    // 1. SAVE USER
+    // 1. Save user
     localStorage.setItem("user", JSON.stringify(fullUser));
 
-    // 2. FORCE STATE UPDATE EVENT
+    // 2. State update
     window.dispatchEvent(new Event("user-login"));
 
-    // 4. FCM IDE ASYNC (NE BLOKIRA LOGIN)
-    setTimeout(() => {
-      saveFCMToken(uid);
-    }, 500);
-   
-   
-   // 3. NAVIGATE ODMAH
+    // 3. FCM token
+    await saveFCMToken(uid);
+
+    // 4. Dashboard
     navigate("/dashboard");
 
-   
-
   } catch (error) {
-    console.log("LOGIN ERROR:", error);
+    console.error("LOGIN ERROR:", error);
     alert("Login error: " + error.message);
   }
 };
- 
  
 
   // =====================================================
   // REGISTER
   // =====================================================
-  const register = async () => {
-    try {
-		
-	 
-		
-      if (!ime || !email || !password || !broj) {
-        alert("Popuni sva polja");
-        return;
-      }
+const register = async () => {
+  try {
+    if (!ime || !email || !password || !broj) {
+      alert("Popuni sva polja");
+      return;
+    }
 
-      if (titula === "Titula") {
-        alert("Izaberi titulu");
-        return;
-      }
-	  
-	  	if (!acceptedTerms) {
+    if (titula === "Titula") {
+      alert("Izaberi titulu");
+      return;
+    }
+
+    if (!acceptedTerms) {
       alert("Morate prihvatiti Uslove korištenja i Politiku privatnosti.");
       return;
     }
 
-      const userCred = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+    // 1. Kreiranje Firebase Auth korisnika
+    const userCred = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
 
-      const uid = userCred.user.uid;
+    const uid = userCred.user.uid;
 
-      const newUser = {
-        ime,
-        email,
-        broj,
-        password,
-        titula,
-        fcmToken: "",
-		 uid,
-      };
+    // 2. Kreiranje korisnika u Realtime Database
+    const newUser = {
+  ime,
+  email,
+  broj,
+  password,
+  titula,
+  fcmToken: "",
+  uid,
+};
 
-      await set(child(usersRestoran(), uid), newUser);
+await set(child(usersRestoran(), uid), newUser);
 
-      localStorage.setItem("user", JSON.stringify(newUser));
-      window.dispatchEvent(new Event("storage"));
+localStorage.setItem("user", JSON.stringify(newUser));
+window.dispatchEvent(new Event("storage"));
 
-      navigate("/dashboard");
-    } catch (error) {
-      alert("Register error: " + error.message);
-    }
-  };
+await saveFCMToken(uid);
+
+navigate("/dashboard");
+
+  } catch (error) {
+    console.error("REGISTER ERROR:", error);
+    alert("Register error: " + error.message);
+  }
+};
 
   // =====================================================
   // UI
