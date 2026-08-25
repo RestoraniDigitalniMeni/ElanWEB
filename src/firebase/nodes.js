@@ -1,4 +1,4 @@
-export const ROOT_RESTORAN = "ELAN";
+export const ROOT_RESTORAN = "PARK";
 export const ORDERS_RESTORAN = "OrdersRestoran";
 export const MENU_RESTORAN = "Menu";
 export const MENU_PODACI = "Podaci";
